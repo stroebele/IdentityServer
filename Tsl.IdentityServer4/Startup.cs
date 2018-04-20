@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -29,15 +31,62 @@ namespace Tsl.IdentityServer4
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+                {
+                    // Password settings
+                    options.Password.RequireDigit = false;
+                    options.Password.RequiredLength = 3;
+                    options.Password.RequiredUniqueChars = 1;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = false;
+                })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.AddAuthentication().AddMicrosoftAccount(options =>
+                {
+                    options.ClientId = "32598a15-76ae-46af-a476-03b77791e974";
+                    options.ClientSecret = "dprDXS1606[irfkWMSK6(+!";
+                    options.Events.OnCreatingTicket += OnCreatingTicket;
+                }
+            );
+
+
 
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddMvc();
+
+            // configure identity server with in-memory stores, keys, clients and scopes
+            services.AddIdentityServer()
+                .AddDeveloperSigningCredential()
+                .AddInMemoryPersistedGrants()
+                .AddInMemoryIdentityResources(Config.GetIdentityResources())
+                .AddInMemoryApiResources(Config.GetApiResources())
+                .AddInMemoryClients(Config.GetClients())
+                .AddAspNetIdentity<ApplicationUser>();
+
+
         }
+
+        private async Task OnCreatingTicket(OAuthCreatingTicketContext ctx)
+        {
+
+            var email =  ctx.Identity.Claims.Where(x => x.Type == System.Security.Claims.ClaimTypes.Email)?.First().Value;
+            var id = ctx.Identity.Claims.Where(x => x.Type == System.Security.Claims.ClaimTypes.NameIdentifier)
+                ?.First().Value;
+
+            
+
+            //throw new NotImplementedException();
+        }
+
+        //private Task OnRedirectToAuthorizationEndpoint(RedirectContext<OAuthOptions> redirectContext)
+        //{
+        //    //throw new NotImplementedException();
+        //}
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -55,7 +104,8 @@ namespace Tsl.IdentityServer4
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
+            // app.UseAuthentication(); // not needed, since UseIdentityServer adds the authentication middleware
+            app.UseIdentityServer();
 
             app.UseMvc(routes =>
             {
