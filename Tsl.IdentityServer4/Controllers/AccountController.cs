@@ -289,28 +289,27 @@ namespace Tsl.IdentityServer4.Controllers
             }
             else
             {
-                // If the user does not have an account, then ask the user to create an account.
-                ViewData["ReturnUrl"] = returnUrl;
-                ViewData["LoginProvider"] = info.LoginProvider;
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                return View("ExternalLogin", new ExternalLoginViewModel { Email = email });
+                //JJS
+                //Create user account
+                var externalLoginViewModel = new ExternalLoginViewModel();
+                externalLoginViewModel.Email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var success = await ExternalLoginConfirmationCode(externalLoginViewModel, returnUrl);
+                return success? RedirectToLocal(returnUrl) : View(nameof(ExternalLogin), externalLoginViewModel);
             }
         }
 
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginViewModel model, string returnUrl = null)
-        {
-            if (ModelState.IsValid)
+
+            public async Task<bool> ExternalLoginConfirmationCode(ExternalLoginViewModel model,string returnUrl = null)
             {
+                
                 // Get the information about the user from the external login provider
                 var info = await _signInManager.GetExternalLoginInfoAsync();
                 if (info == null)
                 {
                     throw new ApplicationException("Error loading external login information during confirmation.");
                 }
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                
+                var user = new ApplicationUser {UserName = model.Email, Email = model.Email};
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -319,15 +318,13 @@ namespace Tsl.IdentityServer4.Controllers
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
-                        return RedirectToLocal(returnUrl);
+                        return true;
                     }
                 }
-                AddErrors(result);
+                return false;
             }
 
-            ViewData["ReturnUrl"] = returnUrl;
-            return View(nameof(ExternalLogin), model);
-        }
+           
 
         [HttpGet]
         [AllowAnonymous]

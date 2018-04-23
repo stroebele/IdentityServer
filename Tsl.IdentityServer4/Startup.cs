@@ -48,7 +48,7 @@ namespace Tsl.IdentityServer4
                 {
                     options.ClientId = "32598a15-76ae-46af-a476-03b77791e974";
                     options.ClientSecret = "dprDXS1606[irfkWMSK6(+!";
-                    options.Events.OnCreatingTicket += OnCreatingTicket;
+                    options.Events.OnCreatingTicket += OnMicrosoftCreatingTicket;
                 }
             );
 
@@ -71,14 +71,17 @@ namespace Tsl.IdentityServer4
 
         }
 
-        private async Task OnCreatingTicket(OAuthCreatingTicketContext ctx)
+        private async Task OnMicrosoftCreatingTicket(OAuthCreatingTicketContext ctx)
         {
 
             var email =  ctx.Identity.Claims.Where(x => x.Type == System.Security.Claims.ClaimTypes.Email)?.First().Value;
             var id = ctx.Identity.Claims.Where(x => x.Type == System.Security.Claims.ClaimTypes.NameIdentifier)
                 ?.First().Value;
 
-            
+
+            var msAccountLinker = new MsAccountHandler(null);
+            msAccountLinker.VerifySignIn(email, id);
+
 
             //throw new NotImplementedException();
         }
@@ -114,5 +117,53 @@ namespace Tsl.IdentityServer4
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+    }
+
+    public class MsAccountHandler
+    {
+        private IAuthRepo _repo;
+
+        public MsAccountHandler(IAuthRepo repo)
+        {
+            _repo = repo;
+        }
+
+
+        public void VerifySignIn(string email, string id)
+        {
+            //Look to see if we already have this email registiered.
+
+            //We do, make sure there's a linked account
+                //No linked account, make one
+
+            //No email registered, setup account, and link
+        }
+    }
+
+    public class Repo : IAuthRepo
+    {
+        private ApplicationDbContext _ctx;
+
+        public Repo(ApplicationDbContext ctx)
+        {
+            _ctx = ctx;
+        }
+
+
+        //public void LinkExistingAccount()
+
+        public void CreateLinkedAccount()
+        {
+            //var token = new AspNetUserTokens<>();
+            //token.LoginProvider = "Microsoft";
+            //token.UserId = 
+            //_ctx.UserTokens.Add(new IdentityUserToken<string>())
+        }
+    }
+
+    public interface IAuthRepo
+    {
+
+
     }
 }
