@@ -12,6 +12,6 @@ namespace Tsl.IdentityServer4.Models.AccountViewModels
         [EmailAddress]
         public string Email { get; set; }
 
-        public string Name { get; set; }
+        public string ContactName { get; set; }
     }
 }

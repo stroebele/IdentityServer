@@ -9,6 +9,11 @@ namespace Tsl.IdentityServer4.Models.AccountViewModels
     public class RegisterViewModel
     {
         [Required]
+        [Display(Name = "Name")]
+        public string ContactName { get; set; }
+
+
+        [Required]
         [EmailAddress]
         [Display(Name = "Email")]
         public string Email { get; set; }

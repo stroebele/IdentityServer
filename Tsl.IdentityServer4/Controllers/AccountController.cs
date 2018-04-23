@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Tsl.IdentityServer4.Models;
 using Tsl.IdentityServer4.Models.AccountViewModels;
 using Tsl.IdentityServer4.Services;
@@ -289,10 +288,10 @@ namespace Tsl.IdentityServer4.Controllers
             }
             else
             {
-                //JJS
                 //Create user account
                 var externalLoginViewModel = new ExternalLoginViewModel();
                 externalLoginViewModel.Email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                externalLoginViewModel.ContactName = info.Principal.FindFirstValue(ClaimTypes.Name);
                 var success = await ExternalLoginConfirmationCode(externalLoginViewModel, returnUrl);
                 return success? RedirectToLocal(returnUrl) : View(nameof(ExternalLogin), externalLoginViewModel);
             }
@@ -309,7 +308,7 @@ namespace Tsl.IdentityServer4.Controllers
                     throw new ApplicationException("Error loading external login information during confirmation.");
                 }
                 
-                var user = new ApplicationUser {UserName = model.Email, Email = model.Email};
+                var user = new ApplicationUser {UserName = model.Email, Email = model.Email, ContactName = model.ContactName};
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {

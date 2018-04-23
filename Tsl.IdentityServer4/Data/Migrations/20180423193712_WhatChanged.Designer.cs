@@ -11,9 +11,10 @@ using Tsl.IdentityServer4.Data;
 namespace Tsl.IdentityServer4.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180423193712_WhatChanged")]
+    partial class WhatChanged
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -137,8 +138,6 @@ namespace Tsl.IdentityServer4.Data.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
-
-                    b.Property<string>("ContactName");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256);
