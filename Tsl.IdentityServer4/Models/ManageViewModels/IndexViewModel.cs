@@ -13,6 +13,9 @@ namespace Tsl.IdentityServer4.Models.ManageViewModels
         public bool IsEmailConfirmed { get; set; }
 
         [Required]
+        public string ContactName { get; set; }
+
+        [Required]
         [EmailAddress]
         public string Email { get; set; }
 
