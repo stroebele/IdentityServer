@@ -16,6 +16,7 @@ namespace Tsl.IdentityServer4
             {
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
+                new IdentityResources.Email(),
             };
         }
 
@@ -42,7 +43,9 @@ namespace Tsl.IdentityServer4
                     {
                         new Secret("secret".Sha256())
                     },
-                    AllowedScopes = { "api1" }
+                    AllowedScopes = { "api1", ClaimTypes.Name, ClaimTypes.Email, ClaimTypes.NameIdentifier },
+                    
+                    
                 },
 
                 // resource owner password grant client
@@ -58,14 +61,34 @@ namespace Tsl.IdentityServer4
                     AllowedScopes = { "api1" }
                 },
 
+                new Client
+                {
+                    ClientId = "native.code",
+                    ClientName = "Native Client (Code with PKCE)",
+
+                    RedirectUris = { "https://notused", "sample-windows-client://callback" },
+                    PostLogoutRedirectUris = { "https://notused" },
+
+                    RequireClientSecret = false,
+                    RequireConsent = false,
+
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RequirePkce = true,
+                    AllowedScopes = { "openid", "profile", "email"},
+                    //AllowedScopes = {"api1"},
+
+                    AllowOfflineAccess = true,
+                    RefreshTokenUsage = TokenUsage.ReUse
+                },
+
                 // OpenID Connect hybrid flow and client credentials client (MVC)
                 new Client
                 {
-                    ClientId = "mvc",
+                    ClientId = "mvc.hybrid",
                     ClientName = "MVC Client",
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     RequireConsent = false,
-
+                    
                     ClientSecrets =
                     {
                         new Secret("secret".Sha256())
