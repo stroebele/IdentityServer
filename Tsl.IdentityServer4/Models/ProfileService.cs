@@ -7,6 +7,7 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 
 namespace Tsl.IdentityServer4.Models
 {
@@ -24,10 +25,14 @@ namespace Tsl.IdentityServer4.Models
             //>Processing
             var user = _userManager.GetUserAsync(context.Subject).Result;
 
-            var claims = new List<Claim>
+            var claims = new List<Claim>();
+
+            claims.Add(new Claim(ClaimTypes.Name, user.ContactName));
+            if (user.EmailConfirmed)
             {
-                new Claim("ContactName", user.ContactName),
-            };
+                claims.Add(new Claim(ClaimTypes.Email, user.Email));
+            }
+
 
             context.IssuedClaims.AddRange(claims);
 
